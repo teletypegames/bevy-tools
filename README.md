@@ -11,8 +11,11 @@ projects, in the same spirit as
   `ci-update`).
 - `example-woodpecker.yaml` — Woodpecker pipeline: version → build
   (Rust, `wasm32-unknown-unknown` target + `wasm-bindgen` in the
-  `rust:1-alpine` image) → upload (scp to the droparea) → update
-  (calls the teletypegames `/update` endpoint with `platform=bevy`).
+  `git.teletype.hu/internal/bevy-builder` image) → upload (scp to the
+  droparea) → update (calls the teletypegames `/update` endpoint with
+  `platform=bevy`).
+- `builder.Dockerfile` — the CI builder image: `rust:1-alpine` with
+  the wasm target, the wasm-bindgen CLI and make/zip/curl baked in.
 - `example-tasks.json` — VS Code `.vscode/tasks.json` with the common
   dev tasks: **Run** (`cargo run`, default build task, `Cmd+Shift+B`),
   **Build & Run**, **Build WASM** and **Make build**.
@@ -34,8 +37,9 @@ projects, in the same spirit as
    ```
 
    The `wasm-bindgen` CLI and the crate **must be the same version**,
-   otherwise the generated JS glue refuses to load. The pipeline
-   installs the CLI version parsed from the Makefile.
+   otherwise the generated JS glue refuses to load. The builder image
+   ships the CLI — when bumping the version, rebuild the image with
+   the matching `--build-arg WASM_BINDGEN_VERSION`.
 3. Copy `example-woodpecker.yaml` to `.woodpecker.yaml` and add the
    `droparea_ssh_password` / `update_secret_key` secrets in Woodpecker.
 4. Copy `example-tasks.json` to `.vscode/tasks.json` and replace the
@@ -48,5 +52,14 @@ Local WASM builds additionally need
 The pipeline uploads `$(PROJECT)-$(VERSION).html.zip` to the droparea,
 then triggers
 `/update?platform=bevy&name=$(PROJECT)&version=$(VERSION)`.
+
+## Builder image
+
+```sh
+docker build --platform linux/amd64 -f builder.Dockerfile \
+  --build-arg WASM_BINDGEN_VERSION=0.2.100 \
+  -t git.teletype.hu/internal/bevy-builder:latest .
+docker push git.teletype.hu/internal/bevy-builder:latest
+```
 
 Detailed documentation lives on the wiki: `/development/bevy`.

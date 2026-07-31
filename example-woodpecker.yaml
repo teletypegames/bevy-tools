@@ -6,12 +6,8 @@ steps:
       - make ci-version
 
   - name: build
-    image: rust:1-alpine
+    image: git.teletype.hu/internal/bevy-builder:latest
     commands:
-      - apk add --no-cache musl-dev zip make curl
-      - rustup target add wasm32-unknown-unknown
-      - WB=$(grep -o 'WASM_BINDGEN_VERSION *= *[0-9.]*' Makefile | grep -o '[0-9.]*$')
-      - curl -sSL "https://github.com/rustwasm/wasm-bindgen/releases/download/$${WB}/wasm-bindgen-$${WB}-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /usr/local/bin --strip-components=1
       - make ci-export
 
   - name: upload
