@@ -11,7 +11,7 @@ projects, in the same spirit as
   `ci-update`).
 - `example-woodpecker.yaml` — Woodpecker pipeline: version → build
   (Rust, `wasm32-unknown-unknown` target + `wasm-bindgen` in the
-  `git.teletype.hu/internal/bevy-builder` image) → upload (scp to the
+  `git.teletypegames.org/internal/bevy-builder` image) → upload (scp to the
   droparea) → update (calls the teletypegames `/update` endpoint with
   `platform=bevy`).
 - `builder.Dockerfile` — the CI builder image: `rust:1-alpine` with
@@ -58,8 +58,8 @@ then triggers
 ```sh
 docker build --platform linux/amd64 -f builder.Dockerfile \
   --build-arg WASM_BINDGEN_VERSION=0.2.100 \
-  -t git.teletype.hu/internal/bevy-builder:latest .
-docker push git.teletype.hu/internal/bevy-builder:latest
+  -t git.teletypegames.org/internal/bevy-builder:latest .
+docker push git.teletypegames.org/internal/bevy-builder:latest
 ```
 
 Detailed documentation lives on the wiki: `/development/bevy`.

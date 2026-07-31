@@ -15,7 +15,7 @@ WASM_RELEASE = target/$(WASM_TARGET)/release/$(PROJECT).wasm
 OUTPUT_ZIP   = $(PROJECT)-$(VERSION).html.zip
 
 VERSION_FILE = .version
-INDEX_HTML_URL = https://git.teletype.hu/tools/bevy-tools/raw/branch/master/web/index.html
+INDEX_HTML_URL = https://git.teletypegames.org/tools/bevy-tools/raw/branch/master/web/index.html
 
 all: build
 

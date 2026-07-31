@@ -6,7 +6,7 @@ steps:
       - make ci-version
 
   - name: build
-    image: git.teletype.hu/internal/bevy-builder:latest
+    image: git.teletypegames.org/internal/bevy-builder:latest
     commands:
       - make ci-export
 

@@ -10,8 +10,8 @@
 # Build & push (the CI runner is linux/amd64):
 #   docker build --platform linux/amd64 -f builder.Dockerfile \
 #     --build-arg WASM_BINDGEN_VERSION=0.2.100 \
-#     -t git.teletype.hu/internal/bevy-builder:latest .
-#   docker push git.teletype.hu/internal/bevy-builder:latest
+#     -t git.teletypegames.org/internal/bevy-builder:latest .
+#   docker push git.teletypegames.org/internal/bevy-builder:latest
 
 FROM rust:1-alpine
 
