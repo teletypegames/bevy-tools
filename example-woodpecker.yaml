@@ -7,8 +7,15 @@ steps:
 
   - name: build
     image: git.teletypegames.org/internal/bevy-builder:latest
+    pull: true
     commands:
       - make ci-export
+
+  - name: binaries
+    image: git.teletypegames.org/internal/bevy-builder:latest
+    pull: true
+    commands:
+      - make ci-binaries
 
   - name: upload
     image: alpine

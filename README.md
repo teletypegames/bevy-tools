@@ -6,16 +6,20 @@ projects, in the same spirit as
 [godot-tools](../godot-tools).
 
 - `example-makefile.make` — project Makefile: local dev targets
-  (`build`, `run`, `wasm`, `export`, `watch`, `clean`) plus the
-  Woodpecker pipeline targets (`ci-version`, `ci-export`, `ci-upload`,
-  `ci-update`).
+  (`build`, `run`, `wasm`, `export`, `binaries`, `watch`, `clean`)
+  plus the Woodpecker pipeline targets (`ci-version`, `ci-export`,
+  `ci-binaries`, `ci-upload`, `ci-update`).
 - `example-woodpecker.yaml` — Woodpecker pipeline: version → build
   (Rust, `wasm32-unknown-unknown` target + `wasm-bindgen` in the
-  `git.teletypegames.org/internal/bevy-builder` image) → upload (scp to the
-  droparea) → update (calls the teletypegames `/update` endpoint with
+  `git.teletypegames.org/internal/bevy-builder` image) → binaries
+  (native linux-x64 + mingw win-x64) → upload (scp to the droparea) →
+  update (calls the teletypegames `/update` endpoint with
   `platform=bevy`).
-- `builder.Dockerfile` — the CI builder image: `rust:1-alpine` with
-  the wasm target, the wasm-bindgen CLI and make/zip/curl baked in.
+- `builder.Dockerfile` — the CI builder image: `rust:1-bookworm`
+  (glibc — bevy's native linux build needs alsa/udev, which does not
+  build against musl) with the wasm + `x86_64-pc-windows-gnu`
+  targets, mingw-w64, the wasm-bindgen CLI and make/zip/curl baked
+  in.
 - `example-tasks.json` — VS Code `.vscode/tasks.json` with the common
   dev tasks: **Run** (`cargo run`, default build task, `Cmd+Shift+B`),
   **Build & Run**, **Build WASM** and **Make build**.
@@ -49,9 +53,30 @@ Local WASM builds additionally need
 `rustup target add wasm32-unknown-unknown` and the `wasm-bindgen` CLI
 (`cargo install wasm-bindgen-cli --version 0.2.100`).
 
-The pipeline uploads `$(PROJECT)-$(VERSION).html.zip` to the droparea,
-then triggers
-`/update?platform=bevy&name=$(PROJECT)&version=$(VERSION)`.
+The pipeline uploads `$(PROJECT)-$(VERSION).html.zip` and the native
+binary zips (`-win-x64.zip`, `-linux-x64.zip`) to the droparea, then
+triggers `/update?platform=bevy&name=$(PROJECT)&version=$(VERSION)`.
+The API's `BinaryAttachment` concern picks up the
+`<name>-<version>-<slug>.zip` files automatically and registers them
+as `win_x64` / `linux_x64` release assets.
+
+## Native binaries
+
+`make binaries VERSION=x.y` builds:
+
+- **linux-x64** — a regular `cargo build --release` in the
+  debian-based builder; the binary links against the builder's glibc
+  and the usual desktop libs (alsa, udev).
+- **win-x64** — mingw-w64 cross-compile via the
+  `x86_64-pc-windows-gnu` target; the linker is set from the
+  Makefile (`CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER`), no
+  per-repo `.cargo/config` needed.
+- **mac** — not built here: cgo-style native cross-compilation to
+  darwin needs osxcross, the same (planned) toolchain as the
+  ebitengine mac targets.
+
+If the project has an `assets/` directory it is packaged next to the
+binary — bevy loads it at runtime, it is not embedded.
 
 ## Builder image
 

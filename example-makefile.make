@@ -33,6 +33,48 @@ wasm:
 	wasm-bindgen --target web --no-typescript \
 		--out-dir $(DIST_DIR) --out-name game $(WASM_RELEASE)
 
+# -----------------------------------------
+# Native binaries. linux-x64: glibc build in the debian-based builder
+# image; win-x64: mingw-w64 cross-compile (x86_64-pc-windows-gnu).
+# Mac needs osxcross, it is not built here.
+# The zip gets the assets/ dir too if the project has one — bevy loads
+# it at runtime, it is not embedded in the binary.
+# -----------------------------------------
+
+BINARY_SLUGS = win-x64 linux-x64
+WIN_TARGET   = x86_64-pc-windows-gnu
+
+# $(1) slug, $(2) built binary, $(3) file name inside the package
+define f_pack_binary
+	set -e; \
+	PKG_DIR="$(PROJECT)-$(VERSION)-$(1)"; \
+	rm -rf "$$PKG_DIR" "$$PKG_DIR.zip"; \
+	mkdir -p "$$PKG_DIR"; \
+	cp "$(2)" "$$PKG_DIR/$(3)"; \
+	chmod +x "$$PKG_DIR/$(3)"; \
+	if [ -d assets ]; then cp -r assets "$$PKG_DIR/assets"; fi; \
+	zip -qr "$$PKG_DIR.zip" "$$PKG_DIR"; \
+	rm -rf "$$PKG_DIR"; \
+	echo "==> $$PKG_DIR.zip kesz"
+endef
+
+binaries:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "ERROR: VERSION not set!"; exit 1; \
+	fi
+	@$(MAKE) binary-linux binary-win VERSION=$(VERSION)
+
+binary-linux:
+	@echo "==> Building linux-x64 binary"
+	cargo build --release
+	@$(call f_pack_binary,linux-x64,target/release/$(PROJECT),$(PROJECT))
+
+binary-win:
+	@echo "==> Building win-x64 binary"
+	CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc \
+		cargo build --release --target $(WIN_TARGET)
+	@$(call f_pack_binary,win-x64,target/$(WIN_TARGET)/release/$(PROJECT).exe,$(PROJECT).exe)
+
 export: wasm
 	@if [ -z "$(VERSION)" ]; then \
 		echo "ERROR: VERSION not set!"; exit 1; \
@@ -66,18 +108,26 @@ ci-export:
 	@VERSION=$$(cat $(VERSION_FILE)); \
 	$(MAKE) export VERSION=$$VERSION
 
+ci-binaries:
+	@VERSION=$$(cat $(VERSION_FILE)); \
+	$(MAKE) binaries VERSION=$$VERSION
+
 ci-upload:
 	@VERSION=$$(cat $(VERSION_FILE)); \
 	FILE="$(PROJECT)-$$VERSION.html.zip"; \
 	META_SRC="metadata.json"; \
 	META_DST="$(PROJECT)-$$VERSION.metadata.json"; \
 	cp $$META_SRC $$META_DST; \
+	BINS=""; \
+	for slug in $(BINARY_SLUGS); do \
+		[ -f "$(PROJECT)-$$VERSION-$$slug.zip" ] && BINS="$$BINS $(PROJECT)-$$VERSION-$$slug.zip"; \
+	done; \
 	sshpass -p "$(DROPAREA_SSH_PASSWORD)" scp -o StrictHostKeyChecking=no -P $(DROPAREA_PORT) \
-		$$FILE $$META_DST \
+		$$FILE $$META_DST $$BINS \
 		$(DROPAREA_USER)@$(DROPAREA_HOST):$(DROPAREA_TARGET_PATH)/
 
 ci-update:
 	@VERSION=$$(cat $(VERSION_FILE)); \
 	curl "$(UPDATE_SERVER)/update?secret=$(UPDATE_SECRET)&name=$(PROJECT)&platform=bevy&version=$$VERSION"
 
-.PHONY: all build run wasm export watch clean ci-version ci-export ci-upload ci-update
+.PHONY: all build run wasm export binaries binary-linux binary-win watch clean ci-version ci-export ci-binaries ci-upload ci-update
