@@ -128,8 +128,8 @@ ci-upload:
 			"$(UPDATE_SERVER)/build/upload?name=$(PROJECT)&version=$$VERSION" || exit 1; \
 	done
 
-ci-update:
+ci-publish:
 	@VERSION=$$(cat $(VERSION_FILE)); \
 	curl -fsS -X POST -H "X-Update-Secret: $(UPDATE_SECRET)" "$(UPDATE_SERVER)/build/publish?name=$(PROJECT)&platform=bevy&version=$$VERSION"
 
-.PHONY: all build run wasm export binaries binary-linux binary-win watch clean ci-version ci-export ci-binaries ci-upload ci-update
+.PHONY: all build run wasm export binaries binary-linux binary-win watch clean ci-version ci-export ci-binaries ci-upload ci-publish

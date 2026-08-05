@@ -8,12 +8,12 @@ projects, in the same spirit as
 - `example-makefile.make` — project Makefile: local dev targets
   (`build`, `run`, `wasm`, `export`, `binaries`, `watch`, `clean`)
   plus the Woodpecker pipeline targets (`ci-version`, `ci-export`,
-  `ci-binaries`, `ci-upload`, `ci-update`).
+  `ci-binaries`, `ci-upload`, `ci-publish`).
 - `example-woodpecker.yaml` — Woodpecker pipeline: version → build
   (Rust, `wasm32-unknown-unknown` target + `wasm-bindgen` in the
   `git.teletypegames.org/internal/bevy-builder` image) → binaries
   (native linux-x64 + mingw win-x64) → upload (HTTP POST to `/build/upload`) →
-  update (calls the teletypegames `/build/publish` endpoint with
+  publish (calls the teletypegames `/build/publish` endpoint with
   `platform=bevy`).
 - `builder.Dockerfile` — the CI builder image: `rust:1-bookworm`
   (glibc — bevy's native linux build needs alsa/udev, which does not
