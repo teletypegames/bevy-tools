@@ -12,8 +12,8 @@ projects, in the same spirit as
 - `example-woodpecker.yaml` — Woodpecker pipeline: version → build
   (Rust, `wasm32-unknown-unknown` target + `wasm-bindgen` in the
   `git.teletypegames.org/internal/bevy-builder` image) → binaries
-  (native linux-x64 + mingw win-x64) → upload (scp to the droparea) →
-  update (calls the teletypegames `/update` endpoint with
+  (native linux-x64 + mingw win-x64) → upload (HTTP POST to `/build/upload`) →
+  update (calls the teletypegames `/build/publish` endpoint with
   `platform=bevy`).
 - `builder.Dockerfile` — the CI builder image: `rust:1-bookworm`
   (glibc — bevy's native linux build needs alsa/udev, which does not
@@ -45,7 +45,7 @@ projects, in the same spirit as
    ships the CLI — when bumping the version, rebuild the image with
    the matching `--build-arg WASM_BINDGEN_VERSION`.
 3. Copy `example-woodpecker.yaml` to `.woodpecker.yaml` and add the
-   `droparea_ssh_password` / `update_secret_key` secrets in Woodpecker.
+   `update_secret_key` secret in Woodpecker.
 4. Copy `example-tasks.json` to `.vscode/tasks.json` and replace the
    binary name (`bevydemo`) with `$(PROJECT)`.
 
@@ -54,8 +54,8 @@ Local WASM builds additionally need
 (`cargo install wasm-bindgen-cli --version 0.2.100`).
 
 The pipeline uploads `$(PROJECT)-$(VERSION).html.zip` and the native
-binary zips (`-win-x64.zip`, `-linux-x64.zip`) to the droparea, then
-triggers `/update?platform=bevy&name=$(PROJECT)&version=$(VERSION)`.
+binary zips (`-win-x64.zip`, `-linux-x64.zip`) via `/build/upload`, then
+triggers `/build/publish?platform=bevy&name=$(PROJECT)&version=$(VERSION)`.
 The API's `BinaryAttachment` concern picks up the
 `<name>-<version>-<slug>.zip` files automatically and registers them
 as `win_x64` / `linux_x64` release assets.
