@@ -6,15 +6,11 @@ projects, in the same spirit as
 [godot-tools](../godot-tools).
 
 - `example-makefile.make` — project Makefile: local dev targets
-  (`build`, `run`, `wasm`, `export`, `binaries`, `watch`, `clean`)
-  plus the Woodpecker pipeline targets (`ci-version`, `ci-export`,
-  `ci-binaries`, `ci-upload`, `ci-publish`).
-- `example-woodpecker.yaml` — Woodpecker pipeline: version → build
-  (Rust, `wasm32-unknown-unknown` target + `wasm-bindgen` in the
-  `git.teletypegames.org/internal/bevy-builder` image) → binaries
-  (native linux-x64 + mingw win-x64) → upload (HTTP POST to `/build/upload`) →
-  publish (calls the teletypegames `/build/publish` endpoint with
-  `platform=bevy`).
+  (`build`, `run`, `wasm`, `export`, `binaries`, `watch`, `clean`).
+- `example-woodpecker.yaml` — a one-line marker (`platform: bevy`): the
+  full pipeline (version → build → binaries → upload → publish) is served by the update server's Woodpecker
+  configuration extension — preview it with
+  `curl "https://teletypegames.org/build/config?platform=bevy"`.
 - `builder.Dockerfile` — the CI builder image: `rust:1-bookworm`
   (glibc — bevy's native linux build needs alsa/udev, which does not
   build against musl) with the wasm + `x86_64-pc-windows-gnu`
@@ -44,8 +40,11 @@ projects, in the same spirit as
    otherwise the generated JS glue refuses to load. The builder image
    ships the CLI — when bumping the version, rebuild the image with
    the matching `--build-arg WASM_BINDGEN_VERSION`.
-3. Copy `example-woodpecker.yaml` to `.woodpecker.yaml` and add the
-   `update_secret_key` secret in Woodpecker.
+3. Copy `example-woodpecker.yaml` to `.woodpecker.yaml` (a one-line marker — the
+   pipeline itself is served by the update server; add `name:` when the
+   software name differs from the repo name) and add the
+   `application_token` secret in Woodpecker (an ApplicationToken with
+   the `update` + `upload` scopes, created in the admin).
 4. Copy `example-tasks.json` to `.vscode/tasks.json` and replace the
    binary name (`bevydemo`) with `$(PROJECT)`.
 
@@ -53,7 +52,7 @@ Local WASM builds additionally need
 `rustup target add wasm32-unknown-unknown` and the `wasm-bindgen` CLI
 (`cargo install wasm-bindgen-cli --version 0.2.100`).
 
-The pipeline uploads `$(PROJECT)-$(VERSION).html.zip` and the native
+The served pipeline uploads `$(PROJECT)-$(VERSION).html.zip` and the native
 binary zips (`-win-x64.zip`, `-linux-x64.zip`) via `/build/upload`, then
 triggers `/build/publish?platform=bevy&name=$(PROJECT)&version=$(VERSION)`.
 The API's `BinaryAttachment` concern picks up the
