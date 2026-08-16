@@ -82,8 +82,8 @@ binary — bevy loads it at runtime, it is not embedded.
 ```sh
 docker build --platform linux/amd64 -f builder.Dockerfile \
   --build-arg WASM_BINDGEN_VERSION=0.2.100 \
-  -t git.teletypegames.org/internal/bevy-builder:latest .
-docker push git.teletypegames.org/internal/bevy-builder:latest
+  -t git.teletypegames.org/build/bevy-builder:latest .
+docker push git.teletypegames.org/build/bevy-builder:latest
 ```
 
 Detailed documentation lives on the wiki: `/development/bevy`.

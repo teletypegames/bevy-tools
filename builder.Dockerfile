@@ -16,8 +16,8 @@
 # Build & push (the CI runner is linux/amd64):
 #   docker build --platform linux/amd64 -f builder.Dockerfile \
 #     --build-arg WASM_BINDGEN_VERSION=0.2.100 \
-#     -t git.teletypegames.org/internal/bevy-builder:latest .
-#   docker push git.teletypegames.org/internal/bevy-builder:latest
+#     -t git.teletypegames.org/build/bevy-builder:latest .
+#   docker push git.teletypegames.org/build/bevy-builder:latest
 
 FROM rust:1-bookworm
 
@@ -29,7 +29,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       gcc-mingw-w64-x86-64 \
  && rm -rf /var/lib/apt/lists/*
 
-RUN rustup target add wasm32-unknown-unknown x86_64-pc-windows-gnu
+# linux-arm64 cross-build (Raspberry Pi, Odroid, retro handhelds). Debian's
+# main mirror carries arm64, so a plain `dpkg --add-architecture` is enough —
+# no ports repository needed. The :arm64 -dev packages are what alsa-sys and
+# libudev-sys link against; pkg-config finds them via PKG_CONFIG_PATH, which
+# the pipeline sets.
+RUN dpkg --add-architecture arm64 \
+ && apt-get update && apt-get install -y --no-install-recommends \
+      gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
+      libasound2-dev:arm64 libudev-dev:arm64 \
+      libwayland-dev:arm64 libxkbcommon-dev:arm64 \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN rustup target add wasm32-unknown-unknown x86_64-pc-windows-gnu aarch64-unknown-linux-gnu
 
 RUN curl -sSL "https://github.com/rustwasm/wasm-bindgen/releases/download/${WASM_BINDGEN_VERSION}/wasm-bindgen-${WASM_BINDGEN_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
       | tar xz -C /usr/local/bin --strip-components=1 \
