@@ -1,0 +1,13 @@
+{
+  "files": {
+    "example-makefile.make": "Makefile",
+    "example-tasks.json": ".vscode/tasks.json",
+    "hello/Cargo.toml": "Cargo.toml",
+    "hello/Cargo.lock": "Cargo.lock",
+    "hello/src/main.rs": "src/main.rs",
+    "hello/.gitignore": ".gitignore"
+  },
+  "fill": [
+    "hello/Cargo.toml"
+  ]
+}

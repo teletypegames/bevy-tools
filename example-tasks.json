@@ -1,7 +1,6 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    // Copy to .vscode/tasks.json and replace "bevydemo" with your PROJECT name.
     "version": "2.0.0",
     "tasks": [
         {
@@ -17,7 +16,7 @@
         {
             "label": "Build & Run",
             "type": "shell",
-            "command": "make clean && make build && ./bin/bevydemo",
+            "command": "make clean && make build && cargo run --release",
             "problemMatcher": []
         },
         {

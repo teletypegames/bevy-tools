@@ -19,6 +19,17 @@ projects, in the same spirit as
 - `example-tasks.json` — VS Code `.vscode/tasks.json` with the common
   dev tasks: **Run** (`cargo run`, default build task, `Cmd+Shift+B`),
   **Build & Run**, **Build WASM** and **Make build**.
+- `hello/` — the smallest Bevy game: a window with a "Hello World"
+  text (`Cargo.toml`, `Cargo.lock`, `src/main.rs`, `.gitignore`),
+  wasm-bindgen pinned to `WASM_BINDGEN_VERSION`. The crate name must
+  match `PROJECT` (the binary and the `.wasm` are named after it):
+  `name = "{name}"` in `Cargo.toml`, which the toolbox (1.2.0 or
+  later) fills in with the game's name (`fill` in the manifest).
+- `warp-template.json` — what *WarpEngine: New Game* (WarpEngine
+  Toolbox) copies for "Start from the template only": the Makefile,
+  the VS Code tasks and the `hello/` files at the project root. The
+  toolbox sets `PROJECT` and writes `.woodpecker.yaml` and
+  `metadata.json` itself.
 - `web/index.html` — the HTML shell downloaded by `make export` and
   packaged next to the `wasm-bindgen` output (`game.js` +
   `game_bg.wasm`).
@@ -45,8 +56,7 @@ projects, in the same spirit as
    software name differs from the repo name) and add the
    `application_token` secret in Woodpecker (an ApplicationToken with
    the `update` + `upload` scopes, created in the admin).
-4. Copy `example-tasks.json` to `.vscode/tasks.json` and replace the
-   binary name (`bevydemo`) with `$(PROJECT)`.
+4. Copy `example-tasks.json` to `.vscode/tasks.json`.
 
 Local WASM builds additionally need
 `rustup target add wasm32-unknown-unknown` and the `wasm-bindgen` CLI
