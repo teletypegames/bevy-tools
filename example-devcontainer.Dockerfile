@@ -26,3 +26,7 @@ RUN set -e; \
 # The cargo home of the builder image (registry, git checkouts, prefetched
 # crates on some hosts) belongs to dev, so cargo can fetch into it.
 RUN if [ -n "$CARGO_HOME" ] && [ -d "$CARGO_HOME" ]; then chown -R 1000:1000 "$CARGO_HOME"; fi
+
+# The Docker CLI: the WarpEngine Toolbox lists and starts the computer's WarpEngine containers through the
+# socket devcontainer.json mounts.
+COPY --from=docker:27-cli /usr/local/bin/docker /usr/local/bin/docker
