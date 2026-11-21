@@ -44,6 +44,7 @@ so a computer with only Docker builds with the same toolchain as the pipeline.
 The tasks of `example-devcontainer-tasks.json` are merged into
 `.vscode/tasks.json`: `dev image` builds the container image, `play` builds the
 game and plays it in the host's web runtime. The cargo home (`CARGO_HOME`) of the image belongs to `dev` there. `make web` builds the WebAssembly version with its page into `dist/`, which the `play` task plays in the Play panel. The game window does not open in the container: `run (native)` runs `make run` (`cargo run`) on this computer, which needs Rust here.
+The container editor gets its extensions from `example-devcontainer.json`: the WarpEngine Toolbox, Makefile Tools (its configure prompts off; the Toolbox tasks build) and rust-analyzer and crates.
 For an existing game repo, *WarpEngine: Add Dev Container* adds it and merges
 the tasks, keeping yours.
 
