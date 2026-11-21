@@ -1,34 +1,25 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "Run",
-            "type": "shell",
-            "command": "cargo run",
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "Build & Run",
-            "type": "shell",
-            "command": "make clean && make build && cargo run --release",
-            "problemMatcher": []
-        },
-        {
-            "label": "Build WASM",
-            "type": "shell",
-            "command": "make wasm",
-            "problemMatcher": []
-        },
-        {
-            "label": "Make build",
-            "type": "shell",
-            "command": "make build"
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "detail": "Builds the native release binary into bin/",
+      "type": "warpengine",
+      "target": "build",
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "web",
+      "detail": "Builds the WebAssembly version with its page into dist/",
+      "type": "warpengine",
+      "target": "web"
+    },
+    {
+      "label": "run (native)",
+      "detail": "Builds and runs the game on this computer: needs Rust here, does not run in the dev container",
+      "type": "warpengine",
+      "target": "run",
+      "host": true
+    }
+  ]
 }

@@ -16,9 +16,9 @@ projects, in the same spirit as
   build against musl) with the wasm + `x86_64-pc-windows-gnu`
   targets, mingw-w64, the wasm-bindgen CLI and make/zip/curl baked
   in.
-- `example-tasks.json` — VS Code `.vscode/tasks.json` with the common
-  dev tasks: **Run** (`cargo run`, default build task, `Cmd+Shift+B`),
-  **Build & Run**, **Build WASM** and **Make build**.
+- `example-tasks.json` — VS Code `.vscode/tasks.json`: `build` (the default
+  build task) and `web` as `warpengine` tasks, and `run (native)` (`make run`
+  on this computer, with a local Rust).
 - `hello/` — the smallest Bevy game: a window with a "Hello World"
   text (`Cargo.toml`, `Cargo.lock`, `src/main.rs`, `.gitignore`),
   wasm-bindgen pinned to `WASM_BINDGEN_VERSION`. The crate name must
@@ -33,6 +33,19 @@ projects, in the same spirit as
 - `web/index.html` — the HTML shell downloaded by `make export` and
   packaged next to the `wasm-bindgen` output (`game.js` +
   `game_bg.wasm`).
+
+## Dev container
+
+`warp-template.json` has a `devcontainer` key that the WarpEngine Toolbox reads
+(an older toolbox ignores it): a new project gets `.devcontainer/` from
+`example-devcontainer.json` and `example-devcontainer.Dockerfile` — the CI
+builder image the host names (`{builderImage}`) plus git and a `dev` user —
+so a computer with only Docker builds with the same toolchain as the pipeline.
+The tasks of `example-devcontainer-tasks.json` are merged into
+`.vscode/tasks.json`: `dev image` builds the container image, `play` builds the
+game and plays it in the host's web runtime. The cargo home (`CARGO_HOME`) of the image belongs to `dev` there. `make web` builds the WebAssembly version with its page into `dist/`, which the `play` task plays in the Play panel. The game window does not open in the container: `run (native)` runs `make run` (`cargo run`) on this computer, which needs Rust here.
+For an existing game repo, *WarpEngine: Add Dev Container* adds it and merges
+the tasks, keeping yours.
 
 ## Usage in a game repo
 

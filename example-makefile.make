@@ -32,6 +32,9 @@ wasm:
 	wasm-bindgen --target web --no-typescript \
 		--out-dir $(DIST_DIR) --out-name game $(WASM_RELEASE)
 
+web: wasm
+	curl -sSL $(INDEX_HTML_URL) -o $(DIST_DIR)/index.html
+
 # -----------------------------------------
 # Native binaries. linux-x64: glibc build in the debian-based builder
 # image; win-x64: mingw-w64 cross-compile (x86_64-pc-windows-gnu).
@@ -91,4 +94,4 @@ watch:
 clean:
 	rm -rf $(BIN_DIR) $(DIST_DIR) target
 
-.PHONY: all build run wasm export binaries binary-linux binary-win watch clean
+.PHONY: web all build run wasm export binaries binary-linux binary-win watch clean
