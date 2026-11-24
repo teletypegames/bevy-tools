@@ -5,10 +5,11 @@ projects, in the same spirit as
 [ebitengine-tools](../ebitengine-tools) and
 [godot-tools](../godot-tools).
 
-- `example-makefile.make` — project Makefile: local dev targets
-  (`build`, `run`, `wasm`, `export`, `binaries`, `watch`, `clean`).
-- `example-woodpecker.yaml` — a one-line marker (`platform: bevy`): the
-  full pipeline (version → build → binaries → upload → publish) is served by the update server's Woodpecker
+- `example-makefile.make` — project Makefile: the shared targets
+  (`build`, `run`, `check`, `web`, `clean`, see below) plus `export`,
+  `binaries` (`binary-linux-x64`, `binary-win-x64`) and `watch`.
+- `.woodpecker.yaml` (written by New Game, not kept here) — a one-line
+  marker (`platform: bevy`): the full pipeline (version → build → binaries → upload → publish) is served by the update server's Woodpecker
   configuration extension — preview it with
   `curl "https://teletypegames.org/build/config?platform=bevy"`.
 - `builder.Dockerfile` — the CI builder image: `rust:1-bookworm`
@@ -30,7 +31,7 @@ projects, in the same spirit as
   the VS Code tasks and the `hello/` files at the project root. The
   toolbox sets `PROJECT` and writes `.woodpecker.yaml` and
   `metadata.json` itself.
-- `web/index.html` — the HTML shell downloaded by `make export` and
+- `web/index.html` — the HTML shell downloaded by `make web` and
   packaged next to the `wasm-bindgen` output (`game.js` +
   `game_bg.wasm`).
 
@@ -47,6 +48,13 @@ game and plays it in the host's web runtime. The cargo home (`CARGO_HOME`) of th
 The container editor gets its extensions from `example-devcontainer.json`: the WarpEngine Toolbox, Makefile Tools (its configure prompts off; the Toolbox tasks build) and rust-analyzer and crates. It also mounts the computer's Docker socket, with the Docker CLI in the image and `dev` in the socket's group, so the Toolbox lists, starts and restarts the local engine's containers from inside the container.
 For an existing game repo, *WarpEngine: Add Dev Container* adds it and merges
 the tasks, keeping yours.
+
+## Makefile contract
+
+The Makefile has the targets every WarpEngine template shares: `build`, `run`, `check` (the CI's check step runs it in the builder image),
+`clean`, `web` (the WebAssembly build with its page in `dist/`, which Play plays). `warp-engine check makefile` of the
+[WarpEngine CLI](https://wiki.teletypegames.org/godoc/warp-engine-cli/latest/cmd/warp-engine/)
+checks a project against it.
 
 ## Usage in a game repo
 
@@ -65,7 +73,7 @@ the tasks, keeping yours.
    otherwise the generated JS glue refuses to load. The builder image
    ships the CLI — when bumping the version, rebuild the image with
    the matching `--build-arg WASM_BINDGEN_VERSION`.
-3. Copy `example-woodpecker.yaml` to `.woodpecker.yaml` (a one-line marker — the
+3. Create `.woodpecker.yaml` with the line `platform: bevy` (a one-line marker — the
    pipeline itself is served by the update server; add `name:` when the
    software name differs from the repo name) and add the
    `application_token` secret in Woodpecker (an ApplicationToken with

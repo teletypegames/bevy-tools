@@ -14,7 +14,7 @@ WASM_TARGET  = wasm32-unknown-unknown
 WASM_RELEASE = target/$(WASM_TARGET)/release/$(PROJECT).wasm
 OUTPUT_ZIP   = $(PROJECT)-$(VERSION).html.zip
 
-INDEX_HTML_URL = https://git.teletypegames.org/tools/bevy-tools/raw/branch/master/web/index.html
+INDEX_HTML_URL = https://git.teletypegames.org/build/bevy-tools/raw/branch/master/web/index.html
 
 all: build
 
@@ -26,13 +26,14 @@ build:
 run:
 	cargo run
 
-wasm:
+check:
+	cargo check
+
+web:
 	@mkdir -p $(DIST_DIR)
 	cargo build --release --target $(WASM_TARGET)
 	wasm-bindgen --target web --no-typescript \
 		--out-dir $(DIST_DIR) --out-name game $(WASM_RELEASE)
-
-web: wasm
 	curl -sSL $(INDEX_HTML_URL) -o $(DIST_DIR)/index.html
 
 # -----------------------------------------
@@ -64,25 +65,23 @@ binaries:
 	@if [ -z "$(VERSION)" ]; then \
 		echo "ERROR: VERSION not set!"; exit 1; \
 	fi
-	@$(MAKE) binary-linux binary-win VERSION=$(VERSION)
+	@$(MAKE) binary-linux-x64 binary-win-x64 VERSION=$(VERSION)
 
-binary-linux:
+binary-linux-x64:
 	@echo "==> Building linux-x64 binary"
 	cargo build --release
 	@$(call f_pack_binary,linux-x64,target/release/$(PROJECT),$(PROJECT))
 
-binary-win:
+binary-win-x64:
 	@echo "==> Building win-x64 binary"
 	CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER=x86_64-w64-mingw32-gcc \
 		cargo build --release --target $(WIN_TARGET)
 	@$(call f_pack_binary,win-x64,target/$(WIN_TARGET)/release/$(PROJECT).exe,$(PROJECT).exe)
 
-export: wasm
+export: web
 	@if [ -z "$(VERSION)" ]; then \
 		echo "ERROR: VERSION not set!"; exit 1; \
 	fi
-	@echo "==> Downloading index.html"
-	curl -sSL $(INDEX_HTML_URL) -o $(DIST_DIR)/index.html
 	@echo "==> Packaging HTML/WASM for $(VERSION)"
 	zip -r $(OUTPUT_ZIP) -j $(DIST_DIR)/game_bg.wasm $(DIST_DIR)/game.js $(DIST_DIR)/index.html
 	@echo "==> Cleaning temporary files"
@@ -94,4 +93,4 @@ watch:
 clean:
 	rm -rf $(BIN_DIR) $(DIST_DIR) target
 
-.PHONY: web all build run wasm export binaries binary-linux binary-win watch clean
+.PHONY: all build run check web export binaries binary-linux-x64 binary-win-x64 watch clean
